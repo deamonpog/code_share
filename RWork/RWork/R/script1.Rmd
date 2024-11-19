@@ -1,0 +1,74 @@
+
+```{r}
+
+# Sample binary data: each row is an individual, each column is a timestep
+set.seed(123)
+data <- matrix(sample(0:1, 150, replace = TRUE), nrow = 5, ncol = 30)  # Replace this with your actual data
+
+# Function to calculate the sum of non-overlapping triplets along axis 1 for each row
+calculate_non_overlapping_triplet_sums <- function(data) {
+  n_rows <- nrow(data)
+  n_cols <- ncol(data)
+  
+  # Check if there are at least three columns for triplet calculation
+  if (n_cols < 3) {
+    stop("The data must have at least three timesteps for triplet calculations.")
+  }
+  
+  # Calculate the number of non-overlapping triplets in the data
+  num_triplets <- n_cols %/% 3
+  
+  # Initialize a matrix to store results for each row
+  triplet_sums <- matrix(NA, nrow = n_rows, ncol = num_triplets)
+  
+  # Loop through each row
+  for (i in 1:n_rows) {
+    for (j in 1:num_triplets) {
+      start_col <- (j - 1) * 3 + 1  # Calculate the start column for the current triplet
+      triplet_sums[i, j] <- sum(data[i, start_col:(start_col + 2)])
+    }
+  }
+  
+  return(triplet_sums)
+}
+
+# Calculate the non-overlapping triplet sums for the data
+triplet_sums <- calculate_non_overlapping_triplet_sums(data)
+
+# Display the original data and triplet sums
+print("Original Data:")
+print(data)
+
+print("Non-Overlapping Triplet Sums:")
+print(triplet_sums)
+
+```
+```{r}
+
+# Now we want to calculate probablity based on the column (probablity for whole population at that timestep-triplet) 
+# unique_categories <- sort(unique(array(triplet_sums)))
+unique_categories <- c(0,1,2,3)
+
+# Function to calculate the fraction of times each integer in the given set appears in the vector
+calculate_fraction <- function(vector, given_set) {
+  total_length <- length(vector)
+  
+  # Calculate the fraction for each integer in the given set
+  fractions <- sapply(given_set, function(x) {
+    sum(vector == x) / total_length
+  })
+  
+  # Create a named vector for clarity
+  names(fractions) <- paste0("(Sum=", given_set, ")")
+  
+  return(fractions)
+}
+
+# lets apply it over the columns
+answer <- apply(triplet_sums, 2, function(x){calculate_fraction(x, unique_categories)})
+
+print(triplet_sums)
+print(answer)
+
+```
+
